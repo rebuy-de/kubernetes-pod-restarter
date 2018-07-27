@@ -22,8 +22,45 @@ type PodRestarter struct {
 }
 
 type PodRestarterSpec struct {
-	// Fill me
+	// Selector is how the target will be selected.
+	Selector *metav1.LabelSelector `json:"selector"`
+
+	// DryRun will set the killing in dryrun mode or not.
+	// +optional
+	DryRun bool `json:"dryRun,omitempty"`
+
+	// CooldownPeriod is the minimal time between to restart actions.
+	// +optional
+	CooldownPeriod metav1.Duration `json:"cooldownPeriod,omitempty"`
+
+	// MaxUnavailable is the maximum amount of Pods which are allowed to be unavailable among the selected pods.
+	// +optional
+	MaxUnavailable int32 `json:"maxUnavailable,omitempty"`
+
+	// MaxUnavailable is the maximum amount of Pods which are allowed to be unavailable among the selected pods.
+	// +optional
+	MinAvailable int32 `json:"minAvailable,omitempty"`
+
+	// RestartCriteria describes what Pods should get restarted.
+	// +optional
+	RestartCriteria PodRestarterCriteria `json:"restartCriteria,omitempty"`
 }
+
+type PodRestarterCriteria struct {
+	// MaxAge desribes what age a Pod must have at least to get restarted.
+	// +optional
+	MaxAge *metav1.Duration `json:"maxAge,omitempty"`
+
+	// MaxMemoryRequestRatio desribes what the ratio between memory usage and requests a Pod must have at least to get restarted.
+	// +optional
+	//MaxMemoryRequestRatio float32 `json:"maxMemoryRequestRatio,omitempty"`
+
+	// MaxMemoryLimitRatio desribes what the ratio between memory usage and limits a Pod must have at least to get restarted.
+	// +optional
+	//MaxMemoryLimitRatio float32 `json:"maxMemoryLimitRatio,omitempty"`
+}
+
 type PodRestarterStatus struct {
-	// Fill me
+	// +optional
+	LastAction metav1.Time `json:"lastAction,omitempty"`
 }
