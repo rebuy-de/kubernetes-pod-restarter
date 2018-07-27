@@ -45,7 +45,7 @@ func (h *Handler) Handle(ctx context.Context, event sdk.Event) error {
 			return err
 		}
 
-		if insufficientAvailable(o.Spec.MinAvailable, o.Spec.MaxUnavailable, podList) {
+		if !isAvailable(o.Spec.MinAvailable, o.Spec.MaxUnavailable, podList) {
 			return nil
 		}
 
@@ -81,52 +81,6 @@ func (h *Handler) Handle(ctx context.Context, event sdk.Event) error {
 	}
 
 	return nil
-}
-
-func insufficientAvailable(minAvailable int32, maxUnavailable int32, podList *core.PodList) bool {
-	unavailable := int32(0)
-	available := int32(0)
-
-	for _, pod := range podList.Items {
-		ready := true
-
-		for _, container := range pod.Status.InitContainerStatuses {
-			if !container.Ready {
-				ready = false
-			}
-		}
-
-		for _, container := range pod.Status.ContainerStatuses {
-			if !container.Ready {
-				ready = false
-			}
-		}
-
-		if !ready {
-			unavailable++
-		} else {
-			available++
-		}
-	}
-
-	if unavailable > maxUnavailable {
-		logrus.WithFields(logrus.Fields{
-			"MaxUnavailable": maxUnavailable,
-			"Unavailable":    unavailable,
-		}).Info("Too much Pods are unready.")
-		return true
-	}
-
-	if minAvailable >= available {
-		logrus.WithFields(logrus.Fields{
-			"MinAvailable": minAvailable,
-			"Available":    available,
-		}).Info("Not enough Pods are ready.")
-		return true
-	}
-
-	return false
-
 }
 
 func needsCooldown(o *v1alpha1.PodRestarter) bool {
