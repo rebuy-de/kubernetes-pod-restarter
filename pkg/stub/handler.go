@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/rebuy-de/kubernetes-pod-restarter/pkg/apis/lifecycle/v1alpha1"
-	"github.com/sirupsen/logrus"
-
 	"github.com/operator-framework/operator-sdk/pkg/sdk"
+	"github.com/sirupsen/logrus"
 	core "k8s.io/api/core/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/rebuy-de/kubernetes-pod-restarter/pkg/apis/lifecycle/v1alpha1"
 )
 
 func NewHandler() sdk.Handler {
@@ -81,25 +81,6 @@ func (h *Handler) Handle(ctx context.Context, event sdk.Event) error {
 	}
 
 	return nil
-}
-
-func needsCooldown(o *v1alpha1.PodRestarter) bool {
-	var (
-		cooldown   = o.Spec.CooldownPeriod.Duration
-		lastAction = o.Status.LastAction.Time
-		nextAction = lastAction.Add(cooldown)
-	)
-
-	if !lastAction.IsZero() && cooldown > 0 && nextAction.After(time.Now()) {
-		logrus.WithFields(logrus.Fields{
-			"NextAction": nextAction,
-			"LastAction": lastAction,
-			"Cooldown":   cooldown,
-		}).Info("PodRestarter needs cooldown")
-		return true
-	}
-
-	return false
 }
 
 func listPods(namespace string, selector string) (*core.PodList, error) {

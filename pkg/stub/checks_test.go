@@ -2,8 +2,13 @@ package stub
 
 import (
 	"testing"
+	"time"
 
+	"github.com/jonboulle/clockwork"
 	core "k8s.io/api/core/v1"
+	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	lifecycle "github.com/rebuy-de/kubernetes-pod-restarter/pkg/apis/lifecycle/v1alpha1"
 )
 
 func TestIsAvailable(t *testing.T) {
@@ -171,6 +176,61 @@ func TestIsAvailable(t *testing.T) {
 			have := isAvailable(tc.minAvailable, tc.maxUnavailable, podList)
 			if have != tc.want {
 				t.Fatalf("Case %d failed.", i)
+			}
+		})
+	}
+}
+
+func TestNeedsCooldown(t *testing.T) {
+	now, _ := time.Parse(time.RFC3339, "2006-01-02T15:00:00Z")
+	clock = clockwork.NewFakeClockAt(now)
+
+	cases := []struct {
+		name     string
+		cooldown time.Duration
+		offset   time.Duration
+		want     bool
+	}{
+		{
+			name:     "last_action_just_now",
+			cooldown: 30 * time.Second,
+			offset:   -5 * time.Second,
+			want:     true,
+		},
+		{
+			name:     "last_action_long_ago",
+			cooldown: 30 * time.Second,
+			offset:   -5 * time.Hour,
+			want:     false,
+		},
+		{
+			name:     "last_action_in_the_future",
+			cooldown: 30 * time.Second,
+			offset:   time.Minute,
+			want:     true,
+		},
+		{
+			name:     "last_action_just_now_without_cooldown",
+			cooldown: 0,
+			offset:   -5 * time.Second,
+			want:     false,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			restarter := &lifecycle.PodRestarter{
+				Spec: lifecycle.PodRestarterSpec{
+					CooldownPeriod: meta.Duration{Duration: tc.cooldown},
+				},
+				Status: lifecycle.PodRestarterStatus{
+					LastAction: meta.NewTime(now.Add(tc.offset)),
+				},
+			}
+
+			have := needsCooldown(restarter)
+			if have != tc.want {
+				t.Fail()
 			}
 		})
 	}
