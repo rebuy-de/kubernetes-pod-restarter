@@ -3,6 +3,7 @@ package stub
 import (
 	"context"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/operator-framework/operator-sdk/pkg/sdk"
@@ -48,6 +49,9 @@ func (h *Handler) Handle(ctx context.Context, event sdk.Event) error {
 		if !isAvailable(o.Spec.MinAvailable, o.Spec.MaxUnavailable, podList) {
 			return nil
 		}
+
+		// Since we only restart one pod per sync, we want to kill the oldest.
+		sort.Sort(PodsByAge(*podList))
 
 		logrus.Debugf("Found %d matching Pods.", len(podList.Items))
 		for _, pod := range podList.Items {
