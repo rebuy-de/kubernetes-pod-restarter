@@ -25,10 +25,6 @@ type PodRestarterSpec struct {
 	// Selector is how the target will be selected.
 	Selector *metav1.LabelSelector `json:"selector"`
 
-	// DryRun will set the killing in dryrun mode or not.
-	// +optional
-	DryRun bool `json:"dryRun,omitempty"`
-
 	// CooldownPeriod is the minimal time between to restart actions.
 	// +optional
 	CooldownPeriod metav1.Duration `json:"cooldownPeriod,omitempty"`

@@ -1,7 +1,6 @@
 # kubectl create deployment nginx1 --image=nginx
 # kubectl scale deployment nginx1 --replicas 5
 
-
 apiVersion: "lifecycle.rebuy.com/v1alpha1"
 kind: "PodRestarter"
 
