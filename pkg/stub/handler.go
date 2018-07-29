@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"sort"
-	"time"
 
 	"github.com/operator-framework/operator-sdk/pkg/sdk"
 	"github.com/sirupsen/logrus"
@@ -54,31 +53,22 @@ func (h *Handler) Handle(ctx context.Context, event sdk.Event) error {
 		sort.Sort(PodsByAge(*podList))
 
 		logrus.Debugf("Found %d matching Pods.", len(podList.Items))
-		for _, pod := range podList.Items {
-			created := pod.ObjectMeta.CreationTimestamp.Time
-			age := time.Since(created)
-			maxAge := o.Spec.RestartCriteria.MaxAge.Duration
 
-			if age > maxAge {
-				logrus.WithFields(logrus.Fields{
-					"Name":   pod.ObjectMeta.Name,
-					"Reason": "TooOld",
-					"Age":    age,
-				}).Info("Need to restart pod.")
-
-				o.Status.LastAction = meta.Now()
-				err := sdk.Update(o)
-				if err != nil {
-					return err
-				}
-
-				err = sdk.Delete(sdk.Object(&pod))
-				if err != nil {
-					return err
-				}
-
-				return nil
+		// All other Pod are necessarily younger, because we sorted the list.
+		pod := podList.Items[0]
+		if isOldEnough(o, &pod) {
+			o.Status.LastAction = meta.Now()
+			err := sdk.Update(o)
+			if err != nil {
+				return err
 			}
+
+			err = sdk.Delete(sdk.Object(&pod))
+			if err != nil {
+				return err
+			}
+
+			return nil
 		}
 
 		logrus.Info("Did not find any matching Pod.")

@@ -2,10 +2,11 @@ package stub
 
 import (
 	"github.com/jonboulle/clockwork"
-	"github.com/rebuy-de/kubernetes-pod-restarter/pkg/apis/lifecycle/v1alpha1"
 	"github.com/sirupsen/logrus"
 
 	core "k8s.io/api/core/v1"
+
+	lifecycle "github.com/rebuy-de/kubernetes-pod-restarter/pkg/apis/lifecycle/v1alpha1"
 )
 
 var clock clockwork.Clock
@@ -61,7 +62,7 @@ func isAvailable(minAvailable int32, maxUnavailable int32, podList *core.PodList
 
 }
 
-func needsCooldown(o *v1alpha1.PodRestarter) bool {
+func needsCooldown(o *lifecycle.PodRestarter) bool {
 	var (
 		cooldown   = o.Spec.CooldownPeriod.Duration
 		lastAction = o.Status.LastAction.Time
@@ -78,5 +79,29 @@ func needsCooldown(o *v1alpha1.PodRestarter) bool {
 		return true
 	}
 
+	return false
+}
+
+func isOldEnough(restarter *lifecycle.PodRestarter, pod *core.Pod) bool {
+	var (
+		maxAge  = restarter.Spec.RestartCriteria.MaxAge.Duration
+		created = pod.ObjectMeta.CreationTimestamp.Time
+		age     = clock.Since(created)
+	)
+
+	logger := logrus.WithFields(logrus.Fields{
+		"Name":    pod.ObjectMeta.Name,
+		"Reason":  "TooOld",
+		"Age":     age,
+		"MaxAge":  maxAge,
+		"Created": created,
+	})
+
+	if age > maxAge {
+		logger.Info("Pod is old enough for restart.")
+		return true
+	}
+
+	logger.Debug("Pod is not old enough for restart.")
 	return false
 }

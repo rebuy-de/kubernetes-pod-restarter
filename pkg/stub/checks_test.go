@@ -235,3 +235,62 @@ func TestNeedsCooldown(t *testing.T) {
 		})
 	}
 }
+
+func TestIsOldEnough(t *testing.T) {
+	now, _ := time.Parse(time.RFC3339, "2006-01-02T15:00:00Z")
+	clock = clockwork.NewFakeClockAt(now)
+
+	cases := []struct {
+		name    string
+		created time.Time
+		maxAge  time.Duration
+		want    bool
+	}{
+		{
+			name:    "created_just_now",
+			created: now.Add(-5 * time.Second),
+			maxAge:  30 * time.Second,
+			want:    false,
+		},
+		{
+			name:    "created_in_the_future",
+			created: now.Add(1 * time.Hour),
+			maxAge:  30 * time.Second,
+			want:    false,
+		},
+		{
+			name:    "created_long_ago",
+			created: now.Add(-1 * time.Hour),
+			maxAge:  30 * time.Second,
+			want:    true,
+		},
+		{
+			name:    "created_just_now_without_maxAge",
+			created: now.Add(-5 * time.Second),
+			maxAge:  0,
+			want:    true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			restarter := &lifecycle.PodRestarter{
+				Spec: lifecycle.PodRestarterSpec{
+					RestartCriteria: lifecycle.PodRestarterCriteria{
+						MaxAge: &meta.Duration{Duration: tc.maxAge},
+					},
+				},
+			}
+			pod := &core.Pod{
+				ObjectMeta: meta.ObjectMeta{
+					CreationTimestamp: meta.NewTime(tc.created),
+				},
+			}
+
+			have := isOldEnough(restarter, pod)
+			if have != tc.want {
+				t.Fail()
+			}
+		})
+	}
+}
