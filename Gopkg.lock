@@ -144,6 +144,12 @@
   version = "v0.3.5"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/jonboulle/clockwork"
+  packages = ["."]
+  revision = "e7c6d408fd5c44ee1e1d8b79ae32b426afae1f28"
+
+[[projects]]
   name = "github.com/json-iterator/go"
   packages = ["."]
   revision = "ab8a2e0c74be9d3be70b3184d9acc634935ded82"
@@ -515,6 +521,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "ecd2e1d13a38e943f4705a5b804ae00256c7f741f0eb49211cc498d71278059c"
+  inputs-digest = "95b98eb179da1e52aa3f9a9602317614609966679c361ed123ce44ea53a6c30c"
   solver-name = "gps-cdcl"
   solver-version = 1
