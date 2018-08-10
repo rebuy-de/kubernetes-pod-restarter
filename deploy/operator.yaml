@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubernetes-pod-restarter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: kubernetes-pod-restarter
+  template:
+    metadata:
+      labels:
+        name: kubernetes-pod-restarter
+    spec:
+      containers:
+        - name: kubernetes-pod-restarter
+          image: quay.io/rebuy/kubernetes-pod-restarter
+          ports:
+          - containerPort: 60000
+            name: metrics
+          command:
+          - kubernetes-pod-restarter
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: OPERATOR_NAME
+              value: "kubernetes-pod-restarter"
