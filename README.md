@@ -14,12 +14,12 @@ Deletes targeted Kubernetes Pods to force a regular restart.
 * *kubernetes-pod-restarter* can be used as a poor mans solution to memory leaks.
   * **Why don't you fix the leaks instead?** Memory leaks are often hard to
     find. This is especially the case, if it is about a third-party
-    application. Probybly most of the leaks a fixable, but this might not worth
-    the time for minor important services.
+    application. Probably most of the leaks are fixable, but this might not be worth
+    the time for less important services.
   * **Why don't you let Kubernetes OOMKiller do the job?** An OOMKill is not
     a planned event and indicates an issue with a service or within the system.
-    Therefore we monitor OOMKills and getting regular notification about
-    OOMKills, would shadow actual alerts.
+    Therefore we monitor OOMKills. Getting regular notification about
+    OOMKills, would drown out actual alerts.
 
 ## Usage
 
