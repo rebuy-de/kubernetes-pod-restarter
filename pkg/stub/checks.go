@@ -47,8 +47,8 @@ func isAvailable(minAvailable int32, maxUnavailable int32, podList *core.PodList
 		"Unavailable":    unavailable,
 	})
 
-	if unavailable >= maxUnavailable {
-		logger.Info("Too much Pods unready.")
+	if maxUnavailable > 0 && unavailable >= maxUnavailable {
+		logger.Info("Too many Pods unready.")
 		return false
 	}
 
