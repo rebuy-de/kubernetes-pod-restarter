@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: kubernetes-pod-restarter
-          image: quay.io/rebuy/kubernetes-pod-restarter
+          image: quay.io/rebuy/kubernetes-pod-restarter:master
           ports:
           - containerPort: 60000
             name: metrics
