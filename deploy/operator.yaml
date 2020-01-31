@@ -28,3 +28,10 @@ spec:
                   fieldPath: metadata.namespace
             - name: OPERATOR_NAME
               value: "kubernetes-pod-restarter"
+          resources:
+            requests:
+              cpu: 10m
+              memory: 30Mi
+            limits:
+              cpu: 50m
+              memory: 50Mi
