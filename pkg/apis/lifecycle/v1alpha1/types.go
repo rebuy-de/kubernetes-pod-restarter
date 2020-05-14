@@ -31,7 +31,7 @@ type PodRestarterSpec struct {
 
 	// MaxUnavailable is the maximum amount of Pods which are allowed to be unavailable among the selected pods.
 	// +optional
-	MaxUnavailable int32 `json:"maxUnavailable,omitempty"`
+	MaxUnavailable int32 `json:"maxUnavailable"`
 
 	// MaxUnavailable is the maximum amount of Pods which are allowed to be unavailable among the selected pods.
 	// +optional
