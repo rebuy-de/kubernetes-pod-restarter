@@ -1,0 +1,25 @@
+# permissions for end users to edit podrestarters.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: podrestarter-editor-role
+rules:
+- apiGroups:
+  - lifecycle.rebuy.com
+  resources:
+  - podrestarters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - lifecycle.rebuy.com
+  resources:
+  - podrestarters/status
+  verbs:
+  - get
+ 

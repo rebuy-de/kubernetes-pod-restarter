@@ -1,3 +1,0 @@
-apiVersion: lifecycle.rebuy.com/v1alpha1
-kind: PodRestarter
-projectName: kubernetes-pod-restarter
