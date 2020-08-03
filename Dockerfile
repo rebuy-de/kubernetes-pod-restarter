@@ -1,21 +1,27 @@
-FROM golang:1.10-alpine as builder
+# Build the manager binary
+FROM golang:1.14 as builder
 
-RUN apk add --no-cache \
-    bash \
-    curl \
-    git
-RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+WORKDIR /workspace
+# Copy the Go Modules manifests
+COPY go.mod go.mod
+COPY go.sum go.sum
+# cache deps before building and copying source so that we don't need to re-download as much
+# and so that source changes don't invalidate our downloaded layer
+RUN go mod download
 
-WORKDIR /go/src/github.com/rebuy-de/kubernetes-pod-restarter
-COPY . .
+# Copy the go source
+COPY main.go main.go
+COPY api/ api/
+COPY controllers/ controllers/
 
-RUN dep ensure -vendor-only -v
-RUN ./tmp/build/build.sh
+# Build
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager main.go
 
+# Use distroless as minimal base image to package the manager binary
+# Refer to https://github.com/GoogleContainerTools/distroless for more details
+FROM gcr.io/distroless/static:nonroot
+WORKDIR /
+COPY --from=builder /workspace/manager .
+USER nonroot:nonroot
 
-FROM alpine:3.6
-
-RUN adduser -D kubernetes-pod-restarter
-USER kubernetes-pod-restarter
-
-COPY --from=builder /go/src/github.com/rebuy-de/kubernetes-pod-restarter/tmp/_output/bin/kubernetes-pod-restarter /usr/local/bin/kubernetes-pod-restarter
+ENTRYPOINT ["/manager"]
